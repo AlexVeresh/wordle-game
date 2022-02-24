@@ -5,9 +5,9 @@ import Constants
 import Data
 
 {-
-  Функция получает задуманное слово и объект, описывающий всю
-  игру (визуальную часть и состояние игры) и с помощью всех
-  нижеописанных функций рисует весь интерфейс 
+  The function receives the intended word and an object that describes the whole
+  game (the visual part and the state of the game) and with the help of all
+  the functions described below draws the entire interface 
 -}
 drawGamePane :: String -> GamePane -> Picture
 drawGamePane w GamePane {tiles=ts, inputInterface=ks, gameResult=gr} = 
@@ -20,8 +20,8 @@ drawGamePane w GamePane {tiles=ts, inputInterface=ks, gameResult=gr} =
    ]
 
 {-
-  Функция получает список объектов, которые реализуют логику описания
-  кнопок клавиатуры игры и рисует сам интерфейс клавиатуры 
+  The function receives a list of objects that implement the description logic
+  of game keyboard buttons and draws the keyboard interface itself
 -}
 drawInputPane :: [KeyboardButton] -> Picture
 drawInputPane x = let f KeyboardButton{position=(p1, p2), key=l, col=c} = 
@@ -29,21 +29,21 @@ drawInputPane x = let f KeyboardButton{position=(p1, p2), key=l, col=c} =
                   in pictures $ map f x 
 
 {-
-  Функция рисует информацию сбоку   
+  The function draws information on the side  
 -}   
 drawControlPane :: Picture
 drawControlPane = translate (-720) 340 $ scale 0.15 0.15 $ text restartMessage
 
 {-
-  Функция рисует название игры сверху   
+  The function draws the name of the game on top   
 -}
 drawGameTitle :: Picture
 drawGameTitle = translate (-42) 338 $ scale 0.28 0.28 $ text title
 
 {-
-  Функция получает на вход задуманное слово и объект
-  GameResult и в зависимости текущего игрового состояния
-  выводит сообщение между игровым полем и полем клавиатуры   
+  The function receives the intended word and GameResult object as input
+  and outputs a message between the playing field 
+  and the keyboard field depending on the current game state  
 -}
 drawGameResult :: String -> GameResult -> Picture
 drawGameResult _ PLAY = pictures[]
@@ -55,39 +55,39 @@ drawGameResult _ (GameResult val) =
   translate (-185) (-135) $ scale 0.23 0.23 $ text val
 
 {-
-  Функция генерирует всё игровое поле, 
-  отрисовывая ее в определнном месте  
+  The function generates the entire playing field,
+  drawing it in a certain place
 -}
 drawGameTiles :: String -> [GameTile] -> Picture
 drawGameTiles w x = pictures $ generateGameTilesPane w 6 (-115, 305) x
 
 {-
-  Функция с помощью генерации строк, генерирует всё поле, вызывая
-  функцию строки с разным параметром начальной точки отрисовки  
+  The function uses generateGameTilesRow to generate the entire field by calling
+  this function with a different rendering start point parameter  
 -}
 generateGameTilesPane :: String -> Int -> (Float, Float) -> [GameTile] -> [Picture]
 generateGameTilesPane _ 0 _ _ = []
-generateGameTilesPane w n (x, y) l = generateGameTilesRow w (x, y) (take 5 l) ++
-  generateGameTilesPane w (n-1) (x, y-gameTileSize-5) (drop 5 l)
+generateGameTilesPane w n (x, y) l = generateGameTilesRow w (x, y) (take wordLength l) ++
+  generateGameTilesPane w (n-1) (x, y-gameTileSize-tileMargin) (drop wordLength l)
 
 {-
-  Функция принимает слово на вход, начальную точку и список объектов, 
-  которые используются для основного геймплея(они содержат правильную букву,
-  ту букву, которую поставил игрок и значение hidden, которое говорит о том,
-  надо ли отображать букву игрока сейчас или нет). Функция рисует картинки
-  игровых тайлов, цвет и текст которых зависит от параметров переданного объекта,
-  функция возвращает имеено одну строку игрового поля  
+  The function takes a word as input, a starting point and a list of objects,
+  which are used for the main gameplay (they contain the correct letter,
+  the letter that the player put and the hidden value, which indicates that
+  whether to display the player's letter now or not). The function draws
+  game tiles pictures, which color and text depends on the parameters 
+  of the passed object, the function returns one row of the playing field  
 -}
 generateGameTilesRow :: String -> (Float, Float) -> [GameTile] -> [Picture]
 generateGameTilesRow _ _ [] = []
 generateGameTilesRow w (x, y) (GameTile {myVal=mv, trueVal=tv, hidden=h}:ls) = 
   translate x y (makeGameTile mv tv w h):
-  generateGameTilesRow w (x+gameTileSize+5, y) ls
+  generateGameTilesRow w (x+gameTileSize+tileMargin, y) ls
 
 {-
-  Аналогична функции makeKeyboardTile, но тут
-  присутствует логика определения цвета, которая
-  опирается на правила игры 
+  Similar to the makeKeyboardTile function, but here
+  there is a logic for defining the color, which
+  based on the rules of the game 
 -}                  
 makeGameTile :: Maybe Char -> Char -> String -> Bool -> Picture
 makeGameTile Nothing _ _ _ = pictures [line $ roundedRectPath gameTileSize gameTileSize 0]
@@ -104,11 +104,11 @@ makeGameTile (Just v1) v2 w h
         tileText val = translate (-10) (-38) $ scale 0.18 0.18 $ text val
                          
 {-
-  Функция принимает на вход цвет и текст кнопки, 
-  рисует картинку кнопки заданного цвета и с текстом 
-  внутри, используя функцию для отрисовки прямоугольника
-  и функцию polygon которая объекты типа Path красит внутри
-  контура и возвращает цветную картинку Picture.
+  The function takes as input the color and text of the button,
+  draws a button image of the specified color and text
+  inside, using a function to draw a rectangle
+  and the polygon function that takes outlined objects of type Path  
+  and returns a colored Picture
 -}
 makeKeyboardTile :: Color -> String -> Picture
 makeKeyboardTile c val 
@@ -126,8 +126,8 @@ makeKeyboardTile c val
                     | otherwise = color white $ text val 
 
 {-
-  Функция принимает на вход длину, ширину и радиус углов
-  и рисует прямоугольник с скругленными углами (его контур)
+  The function takes as input the length, width and radius of the corners.
+  and draws a rectangle with rounded corners (it's outline)
 -}
 roundedRectPath :: Float -> Float -> Float -> Path
 roundedRectPath w h r = [(-w/2, -h+r)] ++ reverse (arcPath (-w/2+r, 0) (-r) r) 
@@ -136,10 +136,10 @@ roundedRectPath w h r = [(-w/2, -h+r)] ++ reverse (arcPath (-w/2+r, 0) (-r) r)
   ++ arcPath (-w/2+r, -h+r) (-r) (-r)
 
 {-
-  Функция принимает на вход точку, а также два расстояния 
-  по оси x и по оси y (их можно считать как радиус со знаком),
-  потому их и два, потому что знаки разные могут быть.
-  Сама функция рисует арку(1/4 круга в точке с заданным радусом) 
+  The function takes a point as input, as well as two distances.
+  along the x-axis and along the y-axis (these can be thought of as a signed radius),
+  because there are two of them, because the signs can be different.
+  The function itself draws an arc (1/4 of a circle at a point with a given radius) 
 -}
 arcPath :: (Float, Float) -> Float -> Float -> Path
 arcPath (x, y) r1 r2 = 

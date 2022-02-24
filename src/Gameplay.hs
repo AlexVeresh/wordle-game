@@ -5,9 +5,9 @@ import Constants
 import Graphics.Gloss.Interface.IO.Game
 
 {-
-  Функция получает список возможных слов из файла,
-  задуманное слово и генерирует объект начального
-  игрового поля  
+  The function gets a list of possible words from a file,
+  intended word and generates an object of the initial
+  playing field  
 -}
 initialGamePane :: [String] -> String -> GamePane
 initialGamePane l w = GamePane {
@@ -22,10 +22,10 @@ initialGamePane l w = GamePane {
   }
 
 {-
-  Функция получает нажатую клавишу, ее координаты и 
-  текущие состояние игрового поля и с помощью
-  раннее описанных функций обновляет или не меняет
-  состояние игрового поля  
+  The function receives the pressed key, its coordinates and
+  the current state of the playing field and using
+  previously described functions updates or does not change
+  playing field state 
 -}
 handleInput :: Event -> GamePane -> GamePane
 handleInput (EventKey (SpecialKey KeyF5) Up _ _) GamePane {wordList=wl, word=w}
@@ -40,10 +40,10 @@ handleInput (EventKey (MouseButton LeftButton) Up _ p)
 handleInput _ w = w
 
 {-
-  Функция получает нажатую клавишу (или Nothing, если нажатие было
-  не по клавише) и текущий объект игры, в зависимости от текущего
-  состояния игрового поля и нажатой клавиши обновляет объект игры,
-  в соответсвии с правилами  
+  The function receives the pressed key (or Nothing if the tap was
+  not by the key) and the current game object. This function 
+  updates the game object, according the rules, current state of 
+  the playing field and the input pressed key
 -}
 updateGamePane :: Maybe KeyTile -> GamePane -> GamePane
 updateGamePane Nothing gp = gp
@@ -57,7 +57,7 @@ updateGamePane (Just ENTER)
     tiles=ts, 
     inputInterface=ks
   }
-      | cp == 5 = changeGameState cw ws   
+      | cp == wordLength = changeGameState cw ws   
       | otherwise = gp
         where 
           changeGameState val list 
@@ -67,17 +67,17 @@ updateGamePane (Just ENTER)
                 currentWord=cw,
                 currentTurn=ct,
                 currentPos=0,
-                tiles=updateRevealedTiles (ct*5+cp) ts,
+                tiles=updateRevealedTiles (ct*wordLength+cp) ts,
                 inputInterface=updateInputInterface w cw w ks,
                 gameResult=WIN
               }
-            | ct == 5 = GamePane {
+            | ct == wordLength = GamePane {
                 wordList=ws,
                 word=w,
                 currentWord=cw,
                 currentTurn=ct,
                 currentPos=0,
-                tiles=updateRevealedTiles (ct*5+cp) ts,
+                tiles=updateRevealedTiles (ct*wordLength+cp) ts,
                 inputInterface=updateInputInterface w cw w ks,
                 gameResult=DEFEAT
               }  
@@ -87,7 +87,7 @@ updateGamePane (Just ENTER)
                 currentWord="",
                 currentTurn=ct+1,
                 currentPos=0,
-                tiles=updateRevealedTiles (ct*5+cp) ts,
+                tiles=updateRevealedTiles (ct*wordLength+cp) ts,
                 inputInterface=updateInputInterface w cw w ks,
                 gameResult=PLAY
               }
@@ -117,7 +117,7 @@ updateGamePane (Just DELETE)
           currentWord=init cw,
           currentTurn=ct,
           currentPos=cp-1,
-          tiles=deleteGameTile 0 (ct*5+cp-1) ts,
+          tiles=deleteGameTile 0 (ct*wordLength+cp-1) ts,
           inputInterface=ks,
           gameResult=PLAY
         }
@@ -132,25 +132,25 @@ updateGamePane (Just (KeyTile newVal))
     tiles=ts, 
     inputInterface=ks
   }
-      | cp < 5 = GamePane {
+      | cp < wordLength = GamePane {
           wordList=ws,
           word=w,
           currentWord=cw ++ [newVal],
           currentTurn=ct,
           currentPos=cp+1,
-          tiles=updateGameTile 0 (ct*5+cp) newVal ts,
+          tiles=updateGameTile 0 (ct*wordLength+cp) newVal ts,
           inputInterface=ks,
           gameResult=PLAY
         }
       | otherwise = gp
 
 {-
-  Функция получает задуманное слово (два раза) и слово
-  которое ввел пользователь с текущей строке, два раза
-  слово передается потому что в функции вычисляются цвета
-  кнопок, а для этого нужно сохранить как все слово целиком
-  так и сравнивать его с введенным побуквенно, сама функция 
-  возвращает раскарешнную клавиатуру 
+  The function receives the intended word (two times) and the word
+  entered by the user on the current line, the word is passed twice 
+  because colors are calculated in the function buttons, and 
+  for this purpose one need to save both the whole word
+  and compare it with the entered letter by letter, the function 
+  itself returns the colored keyboard 
 -}
 updateInputInterface :: String -> String -> String -> [KeyboardButton] -> [KeyboardButton]
 updateInputInterface [] _ _ l = l
@@ -164,8 +164,8 @@ updateInputInterface (w:ws) (cw:cws) ans l
     updateInputInterface ws cws ans (updateKeyTile cw wrongLetterColor l)     
 
 {-
-  Функция меняет цвет кнопки, значение которой совпадает
-  с значением переданным как аргумент функции 
+  The function changes the color of a button which value 
+  matches with value passed as function argument 
 -}
 updateKeyTile :: Char -> Color -> [KeyboardButton] -> [KeyboardButton]
 updateKeyTile _ _ [] = []
@@ -174,8 +174,8 @@ updateKeyTile l c (kb@KeyboardButton {key=k, position=p}:ks)
   | otherwise = kb:updateKeyTile l c ks
 
 {-
-  Функция получает число n и список игровых тайлов
-  и меняет значние флага hidden у первых n элементов 
+  The function receives a number n and a list of game tiles
+  and changes the value of the hidden flag on the first n elements 
 -}
 updateRevealedTiles :: Int -> [GameTile] -> [GameTile]
 updateRevealedTiles n l = let f GameTile{myVal=mv, trueVal=tv} = 
@@ -183,8 +183,8 @@ updateRevealedTiles n l = let f GameTile{myVal=mv, trueVal=tv} =
                           in map f (take n l) ++ drop n l
 
 {-
-  Функция аналогично предыдущей, только функция добавляет 
-  введенное юзером значением
+  The function is similar to the previous one, 
+  but this function appends value entered by the user
 -}
 updateGameTile :: Int -> Int -> Char -> [GameTile] -> [GameTile]
 updateGameTile _ _ _ [] = []
@@ -193,10 +193,10 @@ updateGameTile n i newVal (x@GameTile{trueVal=v}:xs)
   | otherwise = x:updateGameTile (n+1) i newVal xs
 
 {-
-  Функция получает начальный индекс для итерации, 
-  индекс требуемого объекта и список игровых тайлов
-  и удаляет значние, которое ввел игрок в эту клетку,
-  возвращает измененный список
+  The function gets the start index to iterate,
+  the index of the required object and the list of game tiles
+  and removes the value that the player entered in this cell.
+  The function returns the modified list
 -}
 deleteGameTile :: Int -> Int -> [GameTile] -> [GameTile]
 deleteGameTile _ _ [] = []
@@ -205,9 +205,9 @@ deleteGameTile n i (x@GameTile{trueVal=v}:xs)
   | otherwise = x:deleteGameTile (n+1) i xs
 
 {-
-  Функция получает задуманное слово и количество строк, и
-  генерирует список объектов игровых тайлов размером
-  LxN где L-длина слова, а N-количество строк
+  The function gets the intended word and the number of lines, and
+  generates a list of game tile objects of size
+  LxN where L is the word length and N is the number of lines
 -}  
 generateTiles :: String -> Int -> [GameTile]
 generateTiles _ 0 = []
@@ -215,8 +215,9 @@ generateTiles w n = let f x = GameTile {myVal=Nothing, trueVal=x, hidden=True}
                     in map f w ++ generateTiles w (n-1)
 
 {-
-  Функция получает начальную позицию генерации клавиатуры и строковый
-  список кнопок и возвращает список объектов клавиш
+  The function receives the starting position of the keyboard 
+  generation and the list of string buttons and 
+  returns a list of key objects
 -}
 generateKeyboardList :: (Float, Float) -> [String] -> [KeyboardButton]
 generateKeyboardList _ [] = []
@@ -232,11 +233,10 @@ generateKeyboardList (x, y) (l:ls)
   where newElem = KeyboardButton{position=(x, y), key=l, col=keyTileColor}   
   
 {-
-  Функция по строковому значению клавиши возвращает 
-  возможное значение нажатой клавиши с помощью объекта
-  KeyTile, причем так как функция findTappedKey
-  может вернуть и пустой список, то эта функция возвращает
-  Maybe KeyTile
+  The function returns possible value of the pressed 
+  key based on the string value of the key, and 
+  since the findTappedKey function can return 
+  an empty list, then this function returns Maybe KeyTile
 -}
 keyboardTapToVal :: [KeyboardButton] -> Maybe KeyTile
 keyboardTapToVal [] = Nothing
@@ -246,20 +246,20 @@ keyboardTapToVal (KeyboardButton{key=k}:_) = Just (valToKey k)
                                      | otherwise = KeyTile $ head val
 
 {-
-  Функция получает координаты точки нажатия и список объектов клавиш,
-  каждая из которых содержит координаты точки центра,и с помощью 
-  функции pointTapArea находит к какой именно клавише относится 
-  это нажатие, если нажатие было на область, которая не относится 
-  к клавиатуре то функция вернет пустой список
+  The function receives the coordinates of the hit point and a 
+  list of key objects, which contains the coordinates of the center point. 
+  After that this function finds which key this click belongs to
+  using function pointTapArea. If the click was on an area that does not belong
+  to the keyboard, the function will return an empty list
 -} 
 findTappedKey :: (Float, Float) -> [KeyboardButton] -> [KeyboardButton]
 findTappedKey keyPos = 
   filter (\ KeyboardButton {position = p} -> pointInTapArea keyPos p)
 
 {-
-  Функция получает координаты точки нажатия и координаты центра
-  кнопки клавиатуры и исходя из размеров кнопки вычисляет 
-  лежит ли точка нажатия в области опредленной кнопки 
+  The function receives the coordinates of the click point and the coordinates 
+  of keyboard button center and calculates whether the click point lies within 
+  the area of specific button based on the size of this button 
 -}                        
 pointInTapArea :: (Float, Float) -> (Float, Float) -> Bool
 pointInTapArea (x, y) (s1, s2) = 

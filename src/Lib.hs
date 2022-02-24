@@ -8,18 +8,20 @@ module Lib
 import System.IO
 import Graphics.Gloss
 import Data.Char (toUpper)
+import System.Random
 import Control.Exception.Base (IOException, try)
 import Constants
 import Gameplay
 import World
 
 {-
-  Функция получает начальное сообщение,
-  далее ожидает путь к файлу с списком 
-  возможных слов, если файл получается открыть,
-  то вызывается функция launchGame, если такого
-  файла не существует то функция ловит ошибку
-  и запрашивает путь к файлу еще раз вызывая саму себя  
+  The function receives the initial message,
+  then expects the path to the file with the list
+  of possible words. If the file can be opened,
+  then the launchGame function is called, if such
+  file does not exist, the function catches an error
+  and asks for the path to the file by calling 
+  itself again  
 -}
 startFunc :: String -> IO ()
 startFunc intro = do
@@ -31,33 +33,29 @@ startFunc intro = do
       Left _ -> do 
         putStrLn noFileException
         startFunc tryAgainMessage
-      Right val -> launchGame val chooseWordMessage
+      Right val -> launchGame val
 
 window :: Display
 window = InWindow title (1500, 800) (0, 0) 
 
 {-
-  Функция получает список возможных слов из файла и
-  сообщение, сообщение выводится в консоль,
-  а с помощью списока запускается игра, так же
-  в этом блоке считвается слово из списка, 
-  которое и будет задуманным  
+  The function gets a list of possible words from the file and
+  message, the message is printed to the console,
+  and the game is launched with the list of words, also
+  in this block function chooses a random word from the list
+  as an intended word  
 -}
-launchGame :: String -> String -> IO ()
-launchGame val m = do
-  putStrLn m
-  chosenWord <- getLine
-  let cw = map toUpper chosenWord
-  if cw `elem` myList
-    then
-      play 
-        window 
-        backgroundColor 
-        30 
-        (initialGamePane myList cw) 
-        (drawGamePane cw) 
-        handleInput 
-        (const id)
-    else
-      launchGame val notInListException
-      where myList = lines $ map toUpper val
+launchGame :: String -> IO ()
+launchGame val = do
+  randomIdx <- randomRIO(0, length myList-1)
+  let chosenWord = myList !! randomIdx
+  putStr (chosenWordMessage ++ chosenWord)
+  play 
+    window 
+    backgroundColor 
+    30 
+    (initialGamePane myList chosenWord) 
+    (drawGamePane chosenWord) 
+    handleInput 
+    (const id)
+  where myList = lines $ map toUpper val
